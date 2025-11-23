@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Affirmation Generator</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: "Poppins", sans-serif;
+      background: linear-gradient(135deg, #fdfbff, #e8f3ff, #ffe8f2);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 700px;
+      background: #ffffffcc;
+      backdrop-filter: blur(12px);
+      border-radius: 24px;
+      padding: 24px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.6);
+      width: 100%;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 16px;
+      font-size: 32px;
+      font-weight: 700;
+      color: #333;
+    }
+
+    .category-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: center;
+    }
+
+    .category-list button {
+      border: none;
+      padding: 10px 18px;
+      border-radius: 20px;
+      font-size: 14px;
+      cursor: pointer;
+      background: #fff;
+      border: 1px solid #ddd;
+      transition: 0.3s;
+    }
+
+    .category-list button.active {
+      background: linear-gradient(90deg, #ff7ab5, #ff4f80);
+      color: white;
+      border: none;
+      box-shadow: 0 5px 15px rgba(255, 105, 150, 0.3);
+    }
+
+    .card {
+      margin-top: 24px;
+      padding: 24px;
+      background: linear-gradient(135deg, #fff, #ffe9f0);
+      border-radius: 20px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+      border: 1px solid white;
+      min-height: 120px;
+    }
+
+    .affirmation-text {
+      font-size: 24px;
+      font-weight: 600;
+      text-align: center;
+    }
+
+    .actions {
+      margin-top: 20px;
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+    }
+
+    .actions button {
+      padding: 10px 18px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      background: #fff;
+      border: 1px solid #ddd;
+      transition: 0.3s;
+    }
+
+    .actions button:hover {
+      background: #f3f3f3;
+    }
+
+    .favorite {
+      margin-top: 24px;
+    }
+
+    .favorite h3 {
+      margin-bottom: 10px;
+      font-size: 18px;
+    }
+
+    .favorite-item {
+      background: white;
+      padding: 12px;
+      border-radius: 10px;
+      border: 1px solid #ddd;
+      margin-bottom: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .small-btn {
+      padding: 6px 10px;
+      font-size: 12px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      cursor: pointer;
+      background: #fff;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>✨ Affirmation Generator ✨ — Version 1.1 (Calm + Energize)</h1>
+
+    <!-- Categories -->
+    <div class="category-list" id="categoryButtons"></div>
+
+    <!-- Affirmation Card -->
+    <div class="card">
+      <div class="affirmation-text" id="affirmation">Select a category to begin ✨</div>
+    </div>
+
+    <!-- Buttons -->
+    <div class="actions">
+      <button onclick="generateRandom()">New Affirmation</button>
+      <button onclick="saveFavorite()">❤️ Save</button>
+      <button onclick="copyAffirmation()">📋 Copy</button>
+    </div>
+
+    <!-- Favorites -->
+    <div class="favorite">
+      <h3>⭐ Saved Favorites</h3>
+      <div id="favoritesList"></div>
+    </div>
+  </div>
+
+  <script>
+    const AFFIRMATIONS = {
+      confidence: [
+        "I am strong, capable, and confident.",
+        "I radiate self-assurance.",
+        "I trust myself to succeed.",
+      ],
+      peace: [
+        "I release all tension and embrace calm.",
+        "My mind is clear and peaceful.",
+        "I choose serenity in every moment.",
+      ],
+      success: [
+        "I attract opportunities effortlessly.",
+        "I am committed to growth and success.",
+        "Every step I take brings me closer to my goals.",
+      ],
+      love: [
+        "I give and receive love freely.",
+        "My heart is open to beautiful connections.",
+        "I deserve love in its purest form.",
+      ],
+    };
+
+    let currentCategory = null;
+    let favorites = JSON.parse(localStorage.getItem("affFavorites") || "[]");
+
+    const categoryButtons = document.getElementById("categoryButtons");
+    const affirmationDiv = document.getElementById("affirmation");
+    const favoritesList = document.getElementById("favoritesList");
+
+    function renderCategories() {
+      Object.keys(AFFIRMATIONS).forEach((cat) => {
+        const btn = document.createElement("button");
+        btn.textContent = cat.charAt(0).toUpperCase() + cat.slice(1);
+        btn.onclick = () => selectCategory(cat, btn);
+        categoryButtons.appendChild(btn);
+      });
+    }
+
+    function selectCategory(cat, button) {
+      currentCategory = cat;
+      document.querySelectorAll(".category-list button").forEach((b) => b.classList.remove("active"));
+      button.classList.add("active");
+      generateRandom();
+    }
+
+    function generateRandom() {
+      if (!currentCategory) return;
+      const list = AFFIRMATIONS[currentCategory];
+      const random = list[Math.floor(Math.random() * list.length)];
+      affirmationDiv.textContent = random;
+    }
+
+    function saveFavorite() {
+      const text = affirmationDiv.textContent;
+      if (!favorites.includes(text)) {
+        favorites.push(text);
+        localStorage.setItem("affFavorites", JSON.stringify(favorites));
+        renderFavorites();
+      }
+    }
+
+    function copyAffirmation() {
+      navigator.clipboard.writeText(affirmationDiv.textContent);
+      alert("Copied to clipboard!");
+    }
+
+    function removeFavorite(text) {
+      favorites = favorites.filter((f) => f !== text);
+      localStorage.setItem("affFavorites", JSON.stringify(favorites));
+      renderFavorites();
+    }
+
+    function renderFavorites() {
+      favoritesList.innerHTML = "";
+      favorites.forEach((fav) => {
+        const div = document.createElement("div");
+        div.className = "favorite-item";
+
+        div.innerHTML = `
+          <span>${fav}</span>
+          <button class="small-btn" onclick="removeFavorite(\"${fav}\")">Remove</button>
+        `;
+
+        favoritesList.appendChild(div);
+      });
+    }
+
+    renderCategories();
+    renderFavorites();
+  </script>
+</body>
+</html>
